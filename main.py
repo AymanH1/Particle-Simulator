@@ -159,7 +159,6 @@ while running:
 
     particles_to_remove.clear()
 
-    # ---------------- PHYSICS ----------------
     for i in range(len(all_particles)):
         for j in range(i + 1, len(all_particles)):
 
@@ -174,7 +173,6 @@ while running:
 
             normal = direction.normalize()
 
-            # ---------------- ANNIHILATION ----------------
             if isinstance(p1, Particle) and isinstance(p2, Particle):
 
                 if (p1.name == "electron" and p2.name == "positron") or \
@@ -191,7 +189,6 @@ while running:
                         particles_to_remove.add(p2)
                         continue
 
-            # ---------------- NUCLEAR BINDING ----------------
             if isinstance(p1, Particle) and isinstance(p2, Particle):
 
                 if {p1.name, p2.name} == {"proton", "neutron"}:
@@ -218,12 +215,10 @@ while running:
 
                         force_magnitude = -1200000 * math.exp(-distance / 45) / (distance + 5)
 
-                        # energy loss near proton (this is what actually matters)
                         if distance < 60:
                             p1.velocity *= 0.995
                             p2.velocity *= 0.995
 
-                        # binding condition (now stable)
                         if distance < 25 and rel_speed < 220:
 
                             hydrogens.append(Hydrogen([p1, p2]))
@@ -234,7 +229,6 @@ while running:
                             continue
 
 
-            # ---------------- FORCES ----------------
             force_magnitude = 0
 
             if isinstance(p1, Particle) and isinstance(p2, Particle):
@@ -248,7 +242,6 @@ while running:
                 elif "neutron" in [p1.name, p2.name]:
                     force_magnitude = -6000000 * math.exp(-distance / 35) / (distance + 0.1)
 
-            # ---------------- NUCLEUS INTERACTION ----------------
             if isinstance(p1, Nucleus) and isinstance(p2, Particle):
                 force_magnitude = -5000000 * math.exp(-distance / 40) / (distance + 0.1)
 
@@ -262,13 +255,11 @@ while running:
             if isinstance(p2, Particle):
                 p2.velocity -= (force / p2.mass) * dt
 
-    # ---------------- REMOVE ----------------
     electrons = [p for p in electrons if p not in particles_to_remove]
     positrons = [p for p in positrons if p not in particles_to_remove]
     protons   = [p for p in protons if p not in particles_to_remove]
     neutrons  = [p for p in neutrons if p not in particles_to_remove]
 
-    # ---------------- UPDATE + DRAW PARTICLES ----------------
     for p in all_particles:
 
         if p.color is None:
@@ -289,18 +280,15 @@ while running:
         if p.position.y <= p.radius or p.position.y >= 720 - p.radius:
             p.velocity.y *= -1
 
-    # ---------------- NUCLEI ----------------
     for n in nuclei:
         pygame.draw.circle(screen, n.color, n.position, n.radius)
         n.position += n.velocity * dt
 
-    # --------------- HYDROGEN ----------------
 
     for h in hydrogens:
         pygame.draw.circle(screen, h.color, h.position, h.radius)
         h.position += h.velocity * dt
 
-    # ---------------- PHOTONS ----------------
     for ph in photons:
         pygame.draw.circle(screen, "grey", ph.position, ph.radius)
         ph.position += ph.velocity * dt
