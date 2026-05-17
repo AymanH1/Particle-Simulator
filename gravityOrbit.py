@@ -12,6 +12,15 @@ class Thing:
         self.velocity = pygame.Vector2(velocity)
         self.mass = mass
 
+def draw_grid(screen, spacing, color=(100,100,100)):
+    width, height = screen.get_size()
+
+    for x in range(0, width, spacing):
+        pygame.draw.line(screen, color, (x, 0), (x, height))
+
+    for y in range(0, height, spacing):
+        pygame.draw.line(screen, color, (0, y), (width, y))
+
 running = True
 
 things = []
@@ -65,15 +74,16 @@ while running:
         if (t.position.x - 640)**2 + (t.position.y - 360)**2 > 100**2
     ]
 
-    screen.fill("white")
+    screen.fill((18, 24, 38))
+    draw_grid(screen,50)
 
     px, py = world_to_screen(640, 360)
-    pygame.draw.circle(screen, "green", (px, py), int(100 * zoom))
+    pygame.draw.circle(screen, (255, 180, 60), (px, py), int(100 * zoom))
     #pygame.draw.circle(screen, (0,0,0), (640, 360), 150, 2)
 
     for t in things:
         sx, sy = world_to_screen(t.position.x, t.position.y)
-        pygame.draw.circle(screen, "black", (sx, sy), max(1, int(10 * zoom)))
+        pygame.draw.circle(screen, (120, 200, 255), (sx, sy), max(1, int(10 * zoom)))
 
     for t in things:
         dx = t.position.x - 640
@@ -121,7 +131,7 @@ while running:
                 sx, sy = world_to_screen(center_x + rx, center_y + ry)
                 points.append((sx, sy))
 
-            pygame.draw.lines(screen, "gray", True, points, 1)
+            pygame.draw.lines(screen, "white", True, points, 1)
 
         # acceleration due to gravity
         # a = G(m/r^2)
@@ -131,6 +141,6 @@ while running:
         t.velocity += acceleration * dt
         t.position += t.velocity * dt
 
-    pygame.draw.circle(screen, "black", (1250, 20), 10)
+    pygame.draw.circle(screen, (120, 200, 255), (1250, 20), 10)
 
     pygame.display.flip()
