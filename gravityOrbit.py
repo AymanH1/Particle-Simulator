@@ -16,7 +16,6 @@ running = True
 
 things = []
 
-# camera
 cam_x, cam_y = 640, 360
 zoom = 1.0
 
@@ -77,7 +76,6 @@ while running:
         pygame.draw.circle(screen, "black", (sx, sy), max(1, int(10 * zoom)))
 
     for t in things:
-        # expected velocity
         dx = t.position.x - 640
         dy = t.position.y - 360
         r = math.sqrt(dx*dx + dy*dy)
@@ -93,16 +91,46 @@ while running:
         if abs(dot) < 1e-2 and abs(speed - expected_speed) < 0.1:
             print("orbit")
 
+        r_vec = pygame.Vector2(dx, dy)
+        v_vec = pygame.Vector2(vx, vy)
+
+        # a = -GM / (v² - 2GM/r)
+        semi_major_axis = (-9.81 * 400000) / ((speed**2) - (2 * 9.81 * 400000) / r)
+
+        # e_vec = (v²/GM - 1/r) * r_vec - (r_dot_v/GM) * v_vec
+        e_vec = (speed**2/(9.81*400000) - 1/r) * r_vec - (dot/(9.81*400000)) * v_vec
+        e = math.sqrt(e_vec.x**2 + e_vec.y**2)
+
+        if semi_major_axis > 0 and e < 1:
+            # b = semi_major_axis * sqrt(1 - e^2)
+            semi_minor_axis = semi_major_axis * math.sqrt(1 - e**2)
+
+            # angle = tan(e_vec.y, e_vec.x)
+            angle = math.atan2(e_vec.y, e_vec.x)
+
+            center_x = 640 - e_vec.x / e * semi_major_axis * e
+            center_y = 360 - e_vec.y / e * semi_major_axis * e
+
+            points = []
+            for i in range(360):
+                theta = math.radians(i)
+                x = semi_major_axis * math.cos(theta)
+                y = semi_minor_axis * math.sin(theta)
+                rx = x * math.cos(angle) - y * math.sin(angle)
+                ry = x * math.sin(angle) + y * math.cos(angle)
+                sx, sy = world_to_screen(center_x + rx, center_y + ry)
+                points.append((sx, sy))
+
+            pygame.draw.lines(screen, "gray", True, points, 1)
+
         # acceleration due to gravity
         # a = G(m/r^2)
-
         force = -9.81 * (400000 / (r**2))
         direction = pygame.Vector2(dx, dy).normalize()
         acceleration = direction * force
         t.velocity += acceleration * dt
         t.position += t.velocity * dt
 
-    # fixed UI on top
     pygame.draw.circle(screen, "black", (1250, 20), 10)
 
     pygame.display.flip()
